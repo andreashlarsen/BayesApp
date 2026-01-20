@@ -1,3 +1,9 @@
+# bift executable
+bift
+
+# clean-up script
+clean_up.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

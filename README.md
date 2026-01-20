@@ -27,6 +27,10 @@ with -f (datafile) being the only required input. `bayesapp_helpfunctions.py` sh
 `python` requirements (can be installed with `pip`) are standard libraries of scientific computing `numpy` and `scipy` as well as `matplotlib` for plotting. 
 
 #### options/flags
+too see all options, run the command: 
+```
+python bayesapp.py -h
+````
 
 ### How to cite
 if you use BayesApp (web version or locally), please cite the most recent publication: 

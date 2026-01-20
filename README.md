@@ -11,25 +11,25 @@ For developers: The source-code for the web-app is available on the dedicated [G
 ### Run locally on your own computer
 
 #### step 1: compile the fortran code
-To run locally, the Fortran code, bift.f (source/bift.f) needs to be compiled, e.g with:
+To run locally, the Fortran code, `bift.f` (source/bift.f) needs to be compiled, e.g with:
 ```
 gfortran bift.f -march=native -O2 -o bift
 ```
-requirements are a gfortran compiler.   
-This is, in our experience, straight forward on Linux, but may cause troubles on MacOS/Windows. Unfortunately, we do not have resources to help with compilation/installation.   
+requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   
 
 #### step 2: run the python program
-When this is done, the program is run as a standard python program: 
+When compilation is done, the program is run as a standard `python` (python3) program: 
 ```
 python bayesapp.py -f datafile.dat
 ````
-with -f (datafile) being the only required input. 
+with -f (datafile) being the only required input. `bayesapp_helpfunctions.py` should be in the same folder. 
+
+`python` requirements (can be installed with `pip`) are standard libraries of scientific fomputing `numpy` and `scipy` as well as `matplotlib` for plotting. 
 
 #### options/flags
 
 ### How to cite
 if you use BayesApp (web version or locally), please cite the most recent publication: 
-
 
 optinally cite the publication describing the core algorithm (Bayesian Indirect Fourier Transformation, BIFT): 
 [Hansen, 2000] (https://doi.org/10.1107/S0021889800012930)

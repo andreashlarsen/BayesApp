@@ -35,17 +35,18 @@ python bayesapp.py -h
 ### How to cite
 if you use BayesApp (web version or locally), please cite the most recent publication: 
 
-optinally cite the publication describing the core algorithm (Bayesian Indirect Fourier Transformation, BIFT): 
+optionally also cite the publication describing the core algorithm (Bayesian Indirect Fourier Transformation, BIFT): 
 [Hansen, 2000] (https://doi.org/10.1107/S0021889800012930)
 
-if you use or report the number of good parameters as a measure for the information content in SAXS/SANS data, please cite: 
+if you use or report the `number of good parameters` as a measure for the information content in SAXS/SANS data, please cite: 
 [Vestergaard and Hansen, 2006](https://doi.org/10.1107/S0021889806035291)
 
-if you rescale your errorbars using BayesApp, pleas cite: 
+if you rescale your errorbars using BayesApp, please cite: 
 [Larsen and Pedersen](https://doi.org/10.1107/S1600576721006877)
 
 ### Developers/maintainers
 BayesApp was originally written by Steen Hansen, University of Copenhagen.    
-The program has been developed by and is currently maintained by Andreas Haahr Larsen, University of Copenhagen. 
+The program has been further developed by and is currently maintained by Andreas Haahr Larsen, University of Copenhagen.   
+The GUI was developed in collaboration with Emre Brookes, University of Montana.    
 
 

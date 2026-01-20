@@ -4,24 +4,23 @@ version 2.0
 
 ## How to install/run
 
-#### Run throught the web application
-BayesApp can be run through the webapp (no installation required) using [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
+#### Run throught the web application 
+BayesApp can be run through the webapp, which also offers a graphical user interface (GUI) through our [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
 For developers: The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
 
 #### Run locally on your own computer, step 1: compile the fortran code
-To run locally, the Fortran code, `bift.f` (source/bift.f) needs to be compiled, e.g with:
+To run locally (no GUI), the Fortran code, `bift.f` (source/bift.f) needs to be compiled, e.g with:
 ```
 gfortran bift.f -march=native -O2 -o bift
 ```
-requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   
+Requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   
 
 #### Run locally on your own computer, step 2: run the python program
-When compilation is done, the program is run as a standard `python` (python3) program: 
+When compilation is done, the program can be run as a standard `python` (python3) program: 
 ```
 python bayesapp.py -f datafile.dat
 ````
 with -f (datafile) being the only required input. `bayesapp_helpfunctions.py` should be in the same folder. 
-
 `python` requirements (can be installed with `pip`) are standard libraries of scientific computing `numpy` and `scipy` as well as `matplotlib` for plotting. 
 
 too see all options, run the command: 

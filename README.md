@@ -4,20 +4,18 @@ version 2.0
 
 ## How to install/run
 
-### GUI
+#### GUI
 BayesApp can be run through the webapp (no installation required) using [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
 For developers: The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
 
-### Run locally on your own computer
-
-#### step 1: compile the fortran code
+#### Run locally on your own computer, step 1: compile the fortran code
 To run locally, the Fortran code, `bift.f` (source/bift.f) needs to be compiled, e.g with:
 ```
 gfortran bift.f -march=native -O2 -o bift
 ```
 requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   
 
-#### step 2: run the python program
+#### Run locally on your own computer, step 2: run the python program
 When compilation is done, the program is run as a standard `python` (python3) program: 
 ```
 python bayesapp.py -f datafile.dat
@@ -31,7 +29,7 @@ too see all options, run the command:
 python bayesapp.py -h
 ````
 
-### How to cite
+## How to cite
 if you use BayesApp (web version or locally), please cite the most recent publication: 
 
 optionally also cite the publication describing the core algorithm (Bayesian Indirect Fourier Transformation, BIFT): 
@@ -43,7 +41,7 @@ if you use or report the `number of good parameters` as a measure for the inform
 if you rescale your errorbars using BayesApp, please cite: 
 [Larsen and Pedersen](https://doi.org/10.1107/S1600576721006877)
 
-### Developers/maintainers
+## Developers/maintainers
 BayesApp was originally written by Steen Hansen, University of Copenhagen.    
 The program has been further developed by and is currently maintained by Andreas Haahr Larsen, University of Copenhagen.   
 The GUI was developed in collaboration with Emre Brookes, University of Montana.    

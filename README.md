@@ -24,7 +24,7 @@ python bayesapp.py -f datafile.dat
 ````
 with -f (datafile) being the only required input. `bayesapp_helpfunctions.py` should be in the same folder. 
 
-`python` requirements (can be installed with `pip`) are standard libraries of scientific fomputing `numpy` and `scipy` as well as `matplotlib` for plotting. 
+`python` requirements (can be installed with `pip`) are standard libraries of scientific computing `numpy` and `scipy` as well as `matplotlib` for plotting. 
 
 #### options/flags
 

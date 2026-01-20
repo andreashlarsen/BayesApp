@@ -6,9 +6,7 @@ version 2.0
 
 ### GUI
 BayesApp can be run through the webapp (no installation required) using [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
-
-#### for developers:   
-The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
+For developers: The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
 
 ### Run locally on your own computer
 

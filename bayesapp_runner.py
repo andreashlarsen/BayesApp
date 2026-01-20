@@ -90,7 +90,6 @@ if __name__=='__main__':
         data = 'data_name_too_long_for_fortran77.dat'
     else:
         data = prefix
-    folder = '.'
 
     ## check if qmin should be updated (due to skip_first option)
     try:
@@ -204,14 +203,18 @@ if __name__=='__main__':
                 f.write('\n')
             f.write('\n')
             f.close()
+            
+            ## ensure bift is at the current location
+            path = os.path.dirname(os.path.realpath(__file__))
+            os.system('cp %s/bift .' % path) # copy bift executable to this location
+            os.system('cp %s/bift.f .' % path)
+            # os.system('cp %s/source/bift .' % path) # copy bift executable to this location
 
             ## run bayesfit (fast run)
-            # path = os.path.dirname(os.path.realpath(__file__))
-            # os.system('%/source/bift < inputfile.dat' % path)
             printt("=================================================================================")
             printt("    Fast run for input parameter estimation")
             printt("=================================================================================")
-            os.system('./source/bift < inputfile.dat')            
+            os.system('./bift < inputfile.dat') 
 
             ## estimate dmax from fast run
             if dmax == '':
@@ -375,12 +378,10 @@ if __name__=='__main__':
 
                 ## run bift
                 os.remove('parameters.dat') # remove parameters file from initial fast run
-                # path = os.path.dirname(os.path.realpath(__file__))
-                #os.system('%/source/bift < inputfile.dat' % path)
                 printt("=================================================================================")
                 printt("    Running BayesApp with estimated input parameters")
                 printt("=================================================================================") 
-                os.system('./source/bift < inputfile.dat')
+                os.system('./bift < inputfile.dat')
                 
                 ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
                 dmax_value = read_params(qmin,qmax)[1] # if there is no parameters.dat file, this will give error
@@ -824,11 +825,12 @@ if __name__=='__main__':
             printt("         try changing the number of points in p(r)")
         plt.savefig('Iq_rs.png',dpi=200)
         plt.tight_layout()
+ 
 
     ## compress output files to zip file
     if args.zip_compress:
         printt('        compressiong to zip file:')
-        os.system('zip results_%s.zip pr.dat pr_bin.dat pr_smooth.dat data.dat fit.dat fit_q.dat parameters.dat rescale.dat outlier_filtered.dat scale_factor.dat stdout.dat inputfile.dat *.png' % prefix)
+        os.system('zip results_%s.zip bift.f bift pr.dat pr_bin.dat pr_smooth.dat data.dat fit.dat fit_q.dat parameters.dat rescale.dat outlier_filtered.dat scale_factor.dat stdout.dat inputfile.dat *.png' % prefix)
 
     ### end timing
     end_time = time.time()-start_time

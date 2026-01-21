@@ -2,6 +2,7 @@
 
 import sys
 import os
+import shutil
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import UnivariateSpline
@@ -23,10 +24,14 @@ if __name__=='__main__':
     printt('RUNNING bayesapp.py version %s \n - for instructions type: python bayesapp.py -h' % version)
     command = "python bayesapp.py"
     for aa in argv[1:]:
-        if ' ' in aa:
-            command += " \"%s\"" % aa
+        if os.path.sep in aa:
+            display_aa = os.path.basename(aa) 
         else:
-            command += " %s" % aa
+            display_aa = aa
+        if ' ' in display_aa:
+            command += " \"%s\"" % display_aa
+        else:
+            command += " %s" % display_aa
     printt('command used: %s' % command)
     printt('#######################################################################################')
 
@@ -91,6 +96,9 @@ if __name__=='__main__':
     else:
         data = prefix
 
+    ## remove path from filename (for output)
+    filename = os.path.basename(args.data_file)
+    
     ## check if qmin should be updated (due to skip_first option)
     try:
         skip_first = int(args.skip_first) # skip first points
@@ -104,17 +112,17 @@ if __name__=='__main__':
         qmin = float(args.q_min)
     except:
         qmin = 0.0
-    header,footer = get_header_footer(data)
+    header,footer = get_header_footer(args.data_file)
     try:
         if skip_first:
-            q_check = np.genfromtxt(data,skip_header=header+skip_first,skip_footer=footer,usecols=[0],unpack=True)
+            q_check = np.genfromtxt(args.data_file,skip_header=header+skip_first,skip_footer=footer,usecols=[0],unpack=True)
         else:
-            q_check = np.genfromtxt(data,skip_header=header,skip_footer=footer,usecols=[0],unpack=True)
+            q_check = np.genfromtxt(args.data_file,skip_header=header,skip_footer=footer,usecols=[0],unpack=True)
     except:
         if skip_first:
-            q_check = np.genfromtxt(data,skip_header=header+skip_first,skip_footer=footer,usecols=[0],unpack=True,encoding='cp855')
+            q_check = np.genfromtxt(args.data_file,skip_header=header+skip_first,skip_footer=footer,usecols=[0],unpack=True,encoding='cp855')
         else:
-            q_check = np.genfromtxt(data,skip_header=header,skip_footer=footer,usecols=[0],unpack=True,encoding='cp855')
+            q_check = np.genfromtxt(args.data_file,skip_header=header,skip_footer=footer,usecols=[0],unpack=True,encoding='cp855')
     if q_check[0] > qmin:
         qmin = q_check[0]
     if q_check[-1] < qmax:
@@ -145,10 +153,10 @@ if __name__=='__main__':
     qmaxRg_in = float(args.Guinier_qmaxRg)
     Guinier_skip_in = int(args.Guinier_skip)
     Porod_limit = float(args.Porod_limit)
-
+    
     ## print start bayesapp message
     printt("=================================================================================")
-    printt('    Reading data:               %s' % args.data_file)
+    printt('    Reading data:                   %s' % filename)
     printt('        header lines in datafile:   %d' % header)
     printt('        footer lines in datafile:   %d' % footer)
     printt('        q min:                      %f' % qmin)
@@ -204,11 +212,14 @@ if __name__=='__main__':
             f.write('\n')
             f.close()
             
-            ## ensure bift is at the current location
+            ## ensure bift and data is at the current location
+            if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
+                shutil.copy2(args.data_file, '.') # copy data file to current location
             path = os.path.dirname(os.path.realpath(__file__))
-            os.system('cp %s/bift .' % path) # copy bift executable to this location
-            os.system('cp %s/bift.f .' % path)
-            # os.system('cp %s/source/bift .' % path) # copy bift executable to this location
+            if not (os.path.exists('bift') and os.path.samefile('%s/bift' % path, 'bift')):
+                shutil.copy2('%s/bift' % path, '.') # copy bift executable to current location
+            if not (os.path.exists('bift.f') and os.path.samefile('%s/bift.f' % path, 'bift.f')):
+                shutil.copy2('%s/bift.f' % path, '.') # copy fortran code to current location
 
             ## run bayesfit (fast run)
             printt("=================================================================================")
@@ -335,11 +346,11 @@ if __name__=='__main__':
                             dmax = '' # reset dmax
         printt("\n\n\n")
         printt("    Estimated input parameters from fast run:")
-        printt("        dmax:                     %s" % dmax)
-        printt("        transformation:           %s" % transformation)
-        printt("        skip first points:        %d" % skip_first)
-        printt("        qmin:                     %e" % qmin)
-        printt("        number of points in p(r): %s" % prpoints)
+        printt("        dmax:                           %s" % dmax)
+        printt("        transformation:                 %s" % transformation)
+        printt("        number of first points skipped: %d" % skip_first)
+        printt("        qmin:                           %e" % qmin)
+        printt("        number of points in p(r):       %s" % prpoints)
         printt("\n\n\n")
 
         ###############################################################
@@ -494,15 +505,7 @@ if __name__=='__main__':
     ###########################
     # end of oulier while loop 
     ###########################
-
-    printt("\n\n\n")
-    printt("    Estimated parameters after runnning BayesApp:")
-    printt("        dmax:                     %s" % dmax)
-    printt("        transformation:           %s" % transformation)
-    printt("        skip first points:        %d" % skip_first)
-    printt("        number of points in p(r): %s" % prpoints)
-    printt("        number of outliers:       %d" % Noutlier)
-
+    
     ## import p(r)
     r,pr,d_pr = np.genfromtxt('pr.dat',skip_header=0,usecols=[0,1,2],unpack=True)
 
@@ -739,7 +742,6 @@ if __name__=='__main__':
             MwF = 0.83/1000 * Vm # Squire and Himmel 1979, 0.83 kDa/nm3 --> 0.83/1000 kDa/A3
             dMwF = MwF * relative_uncertainty
             label = 'Mw = %1.1f +/- %1.1fkDa' % (MwF,dMwF)
-            printt(label)
         else:
             label = ''
 
@@ -825,12 +827,25 @@ if __name__=='__main__':
             printt("         try changing the number of points in p(r)")
         plt.savefig('Iq_rs.png',dpi=200)
         plt.tight_layout()
- 
+
+    ## output values
+    printt("\n\n\n")
+    printt("    Estimated parameters after runnning BayesApp:")
+    printt("        dmax:                       %s" % dmax)
+    printt("        transformation:             %s" % transformation)
+    printt("        skip first points:          %d" % skip_first)
+    printt("        number of points in p(r):   %s" % prpoints)
+    printt("        number of outliers:         %d" % Noutlier)
+    printt("        number of outliers removed: %d" % outliers_removed)
+    if args.Guinier:
+        printt("        Rg from Guinier analysis:   %f" % Rg_Guinier)
+    if args.Kratky_Mw:
+        printt("        Mw from Kratky integration: %1.1f +/- %1.1f kDa" % (MwF,dMwF))
 
     ## compress output files to zip file
     if args.zip_compress:
-        printt('        compressiong to zip file:')
-        os.system('zip results_%s.zip bift.f bift pr.dat pr_bin.dat pr_smooth.dat data.dat fit.dat fit_q.dat parameters.dat rescale.dat outlier_filtered.dat scale_factor.dat stdout.dat inputfile.dat *.png' % prefix)
+        printt('        compressing output to zip file:')
+        os.system('zip results_%s.zip filename bift.f bift pr.dat pr_bin.dat pr_smooth.dat data.dat fit.dat fit_q.dat parameters.dat rescale.dat outlier_filtered.dat scale_factor.dat stdout.dat inputfile.dat *.png > /dev/null' % prefix)
 
     ### end timing
     end_time = time.time()-start_time

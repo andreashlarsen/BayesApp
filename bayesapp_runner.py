@@ -3,6 +3,7 @@
 import sys
 import os
 import shutil
+import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import UnivariateSpline
@@ -86,8 +87,9 @@ if __name__=='__main__':
     #################################################################################
     
     ## remove spaces and brackets from name
-    data_file = args.data_file
-    prefix = data_file.split('/')[-1] 
+    # data_file = args.data_file
+    prefix = os.path.basename(args.data_file)
+    # prefix = data_file.split('/')[-1] 
     prefix = prefix.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
     
     ## naming bug fix: fortran77 cannot use long file names
@@ -216,16 +218,19 @@ if __name__=='__main__':
             if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
                 shutil.copy2(args.data_file, '.') # copy data file to current location
             path = os.path.dirname(os.path.realpath(__file__))
-            if not (os.path.exists('bift') and os.path.samefile('%s/bift' % path, 'bift')):
-                shutil.copy2('%s/bift' % path, '.') # copy bift executable to current location
-            if not (os.path.exists('bift.f') and os.path.samefile('%s/bift.f' % path, 'bift.f')):
-                shutil.copy2('%s/bift.f' % path, '.') # copy fortran code to current location
+            exe = 'bift.exe' if os.name == 'nt' else 'bift'
+            if not (os.path.exists(exe) and os.path.samefile(os.path.join(path, exe), exe)):
+                shutil.copy2(os.path.join(path, exe), '.') # copy bift executable to current location
+            if not (os.path.exists('bift.f') and os.path.samefile(os.path.join(path, 'bift.f'), 'bift.f')):
+                shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy fortran code to current location
 
             ## run bayesfit (fast run)
             printt("=================================================================================")
             printt("    Fast run for input parameter estimation")
             printt("=================================================================================")
-            os.system('./bift < inputfile.dat') 
+            with open('inputfile.dat', 'r') as input_file:
+                #result = subprocess.run([exe], stdin=input_file)
+                result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
 
             ## estimate dmax from fast run
             if dmax == '':
@@ -392,8 +397,9 @@ if __name__=='__main__':
                 printt("=================================================================================")
                 printt("    Running BayesApp with estimated input parameters")
                 printt("=================================================================================") 
-                os.system('./bift < inputfile.dat')
-                
+                with open('inputfile.dat', 'r') as input_file:
+                    result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
+                    
                 ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
                 dmax_value = read_params(qmin,qmax)[1] # if there is no parameters.dat file, this will give error
                 int(dmax_value) # if dmax_valule is nan, this will give error
@@ -842,15 +848,23 @@ if __name__=='__main__':
     if args.Kratky_Mw:
         printt("        Mw from Kratky integration: %1.1f +/- %1.1f kDa" % (MwF,dMwF))
 
-    ## compress output files to zip file
-    if args.zip_compress:
-        printt('        compressing output to zip file:')
-        os.system('zip results_%s.zip filename bift.f bift pr.dat pr_bin.dat pr_smooth.dat data.dat fit.dat fit_q.dat parameters.dat rescale.dat outlier_filtered.dat scale_factor.dat stdout.dat inputfile.dat *.png > /dev/null' % prefix)
-
     ### end timing
     end_time = time.time()-start_time
-    printt('        total time:               %0.1f seconds' % end_time)
+    printt('\n    total time:                   %0.1f seconds' % end_time)
     printt("\n\n\n")
+
+    ## compress output files to zip file
+    if args.zip_compress:
+        import zipfile
+        import glob 
+        zip_filename = f'results_{prefix}.zip'
+        printt('\n    compressing output to zip file: %s' % zip_filename)
+        files_to_zip = ['filename', 'bift.f', exe, 'pr.dat', 'pr_bin.dat', 'pr_smooth.dat','data.dat', 'fit.dat', 'fit_q.dat', 'parameters.dat', 'rescale.dat','outlier_filtered.dat', 'scale_factor.dat', 'bayesapp.log', 'inputfile.dat']
+        files_to_zip.extend(glob.glob('*.png')) # add png images
+        with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file in files_to_zip:
+                if os.path.exists(file):
+                    zipf.write(file)
     
     ## show plots
     if args.show:

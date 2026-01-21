@@ -1,0 +1,32 @@
+ Input file name  =  X4_Xyl-SS-Gt_clean.dat                          
+ qmin and qmax    =    0.0116   0.5560
+ Number of data points               =          682
+ Number of points in p(r)            =           72
+ Number of error calculations        =          178
+ Errors are too low when few error calc. are used
+
+ Convergence of algorithm almost OK...
+
+ I(0) estimated             : 0.123E-01  +- .367E-05 
+ Maximum diameter           :     50.82  +-     2.54 
+ Radius of gyration         :     15.89  +-     0.01 
+ Axial ratio from p(r) (pro):      1.41  +-     0.02 
+ Axial ratio from p(r) (obl):      0.66  +-     0.01 
+ Reduced Chi-square         :      1.04  +-     0.00 
+ Background estimated       :                0.00011
+ Log(alpha) (smoothness)    :     23.08  +-     0.18 
+ Number of good parameters  :      6.76  +-     0.36 
+ Number of Shannon channels :      8.81
+ qmin*(dmax/pi)             :  0.19E+00
+ Evidence at maximum        : -0.39E+03  +-  0.53E+00 
+ Probability of chi-square  :  0.89E+00
+ The exp errors are probably: Correct
+ Correction factor          :      1.02
+ Longest run                :     10.00
+ Expected longest run       :      8.40  +-     0.93 
+ Prob., longest run (cormap): .3035E+00
+ Number of runs             :    328.02
+ Expected number of runs    :    345.32  +-    13.25 
+ Prob.,  number of runs     :  0.19E+00
+
+ CPU time used:    1.1 seconds of maximum  900.0 seconds

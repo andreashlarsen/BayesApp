@@ -101,17 +101,17 @@ if __name__=='__main__':
     ## remove path from filename (for output)
     filename = os.path.basename(args.data_file)
     
-    ## check if qmin should be updated (due to skip_first option)
+    ## import skip first, qmin and qmax
     try:
         skip_first = int(args.skip_first) # skip first points
     except:
         skip_first = ''
     try:
-        qmax = float(args.q_max)
+        qmax = float(args.qmax)
     except:
         qmax = 100.0
     try:
-        qmin = float(args.q_min)
+        qmin = float(args.qmin)
     except:
         qmin = 0.0
     header,footer = get_header_footer(args.data_file)
@@ -161,10 +161,13 @@ if __name__=='__main__':
     printt('    Reading data:                   %s' % filename)
     printt('        header lines in datafile:   %d' % header)
     printt('        footer lines in datafile:   %d' % footer)
-    printt('        q min:                      %f' % qmin)
-    printt('        q max:                      %f' % qmax)
+    printt('        q min:                      %f' % q_check[0])
+    printt('        q min used                  %f' % qmin)
+    printt('        q max:                      %f' % q_check[-1])
+    printt('        q max used                  %f' % qmax)
     printt('        number of points in data:   %d' % len(q_check))
     printt('        data rebinned to around:    %s points' % args.nrebin)
+    printt('        units (of q) assumed to be: 1/%s' % units)
     printt("=================================================================================")
 
     ##################################

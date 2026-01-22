@@ -28,7 +28,7 @@ python bayesapp.py -f datafile.dat
 with -f (datafile) being the only required input.
 
 ##### requirements
-* `bayesapp_helpfunctions.py` and the executable `bift` (compiled version of `bift.f`, see step 1) must be in the same folder. 
+* `bayesapp_helpfunctions.py` and the executable `bift` or `bift.exe` (compiled version of `bift.f`, see step 1) must be in the same folder. 
 * `python` requirements (can be installed with `pip`): `numpy`, `scipy` and `matplotlib`. 
 
 #### options/flags

@@ -38,8 +38,8 @@ python bayesapp.py -h
 ````
 
 ## How to cite
-If you use BayesApp (web version or locally), please cite our most recent publication: 
-[Larsen and Pedersen](https://doi.org/10.1107/S1600576721006877)
+If you use BayesApp (web version or locally), please cite our most recent publication:    
+[Larsen and Pedersen, 2021](https://doi.org/10.1107/S1600576721006877)
 
 Optionally, also cite the publication describing the core algorithm (Bayesian Indirect Fourier Transformation, BIFT): 
 [Hansen, 2000] (https://doi.org/10.1107/S0021889800012930)
@@ -48,7 +48,7 @@ If you use or report the `number of good parameters` as a measure for the inform
 [Vestergaard and Hansen, 2006](https://doi.org/10.1107/S0021889806035291)
 
 If you rescale your errorbars using BayesApp, please cite: 
-[Larsen and Pedersen](https://doi.org/10.1107/S1600576721006877)
+[Larsen and Pedersen, 2021](https://doi.org/10.1107/S1600576721006877)
 
 ## Developers/maintainers
 BayesApp was originally written by Steen Hansen, University of Copenhagen.    

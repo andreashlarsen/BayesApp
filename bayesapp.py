@@ -59,7 +59,7 @@ if __name__=='__main__':
     parser.add_argument('-P_lim', '--Porod_limit', default='0.0', help='Porod limit start')
 
     parser.add_argument('-d', '--dmax', default='', help='dmax (add f in front to fix, e.g. f100)')
-    parser.add_argument('-t', '--transformation', default='A', help='transformation')
+    parser.add_argument('-T', '--transformation', default='A', help='transformation')
     parser.add_argument('-b', '--nrebin', default='500', help='rebin to approximately this number of points')
     parser.add_argument('-a', '--alpha', default='', help='alpha (add f in front to fix, e.g. f100)')
     parser.add_argument('-s', '--smear', default='', help='smear')
@@ -73,7 +73,7 @@ if __name__=='__main__':
     parser.add_argument('-logx', '--logx', action='store_true', default=False, help='logarithmic log axis')
     parser.add_argument('-make_pr_bin', '--make_pr_bin', action='store_true', default=False, help='make_pr_bin')
     parser.add_argument('-pr_binsize', '--pr_binsize', default='1', help='pr_binsize')
-    parser.add_argument('-skip_first', '--skip_first', default='', help='skip_first')
+    parser.add_argument('-skip', '--skip_first', default='', help='skip first points from analysis')
     parser.add_argument('-outlier_ite', '--outlier_ite', action='store_true', default=False, help='outlier_ite')
     parser.add_argument('-fast', '--fast_run', action='store_true', default=False, help='fast_run')
     
@@ -175,6 +175,13 @@ if __name__=='__main__':
     ##################################
     CONTINUE_OUTLIER = True
     count_ite,max_ite,Noutlier_prev,outliers_removed = 0,20,1e3,0
+    if not dmax == '' and not transformation == 'A' and not skip_first == '' and args.fast_run:
+        # making fast run false, because else, in this special case:
+        # fast run will first be skipped as all the above are provided (dmax, transformation etc), 
+        # and then the normal run will also be skipped, so Bayesapp is not run, which gives errors
+        printt('\n    WARNING: changing --fast_run to False, since both dmax, tranformation and skip_first are provided, and these are the numbers that should be determined by the initial fast run\n')
+        args.fast_run = False
+        
     while CONTINUE_OUTLIER:
         count_auto = 0
         #############################################################
@@ -415,7 +422,7 @@ if __name__=='__main__':
                 if SECOND_TRY:
                     CONTINUE_Trans = False
                     printt("=================================================================================")
-                    printt("    Could not find a solution. Try chaning Maximum distance, Transformation, alpha, Number of points in pr, or Skip first points")
+                    printt("    Could not find a solution. Try changing Maximum distance, Transformation, alpha, Number of points in pr, or Skip first points")
                     printt("=================================================================================")
                     exit()
                 elif transformation in ['N','M']:

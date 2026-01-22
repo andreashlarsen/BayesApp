@@ -98,9 +98,6 @@ if __name__=='__main__':
     else:
         data = prefix
 
-    ## remove path from filename (for output)
-    filename = os.path.basename(args.data_file)
-    
     ## import skip first, qmin and qmax
     try:
         skip_first = int(args.skip_first) # skip first points
@@ -155,7 +152,20 @@ if __name__=='__main__':
     qmaxRg_in = float(args.Guinier_qmaxRg)
     Guinier_skip_in = int(args.Guinier_skip)
     Porod_limit = float(args.Porod_limit)
-    
+
+    ## remove path from filename (for output)
+    filename = os.path.basename(args.data_file)
+
+    ## ensure bift and data is at the current location
+    if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
+        shutil.copy2(args.data_file, '.') # copy data file to current location
+    path = os.path.dirname(os.path.realpath(__file__))
+    exe = 'bift.exe' if os.name == 'nt' else 'bift'
+    if not (os.path.exists(exe) and os.path.samefile(os.path.join(path, exe), exe)):
+        shutil.copy2(os.path.join(path, exe), '.') # copy bift executable to current location
+    if not (os.path.exists('bift.f') and os.path.samefile(os.path.join(path, 'bift.f'), 'bift.f')):
+        shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy fortran code to current location
+        
     ## print start bayesapp message
     printt("=================================================================================")
     printt('    Reading data:                   %s' % filename)
@@ -225,16 +235,6 @@ if __name__=='__main__':
                 f.write('\n')
             f.write('\n')
             f.close()
-            
-            ## ensure bift and data is at the current location
-            if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
-                shutil.copy2(args.data_file, '.') # copy data file to current location
-            path = os.path.dirname(os.path.realpath(__file__))
-            exe = 'bift.exe' if os.name == 'nt' else 'bift'
-            if not (os.path.exists(exe) and os.path.samefile(os.path.join(path, exe), exe)):
-                shutil.copy2(os.path.join(path, exe), '.') # copy bift executable to current location
-            if not (os.path.exists('bift.f') and os.path.samefile(os.path.join(path, 'bift.f'), 'bift.f')):
-                shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy fortran code to current location
 
             ## run bayesfit (fast run)
             printt("=================================================================================")

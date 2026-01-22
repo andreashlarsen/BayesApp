@@ -175,19 +175,21 @@ if __name__=='__main__':
     ##################################
     CONTINUE_OUTLIER = True
     count_ite,max_ite,Noutlier_prev,outliers_removed = 0,20,1e3,0
-    if not dmax == '' and not transformation == 'A' and not skip_first == '' and args.fast_run:
+    if not dmax == '' and not transformation == 'A' and not skip_first == '' and not prpoints == '' and args.fast_run:
         # making fast run false, because else, in this special case:
         # fast run will first be skipped as all the above are provided (dmax, transformation etc), 
         # and then the normal run will also be skipped, so Bayesapp is not run, which gives errors
         printt('\n    WARNING: changing --fast_run to False, since both dmax, tranformation and skip_first are provided, and these are the numbers that should be determined by the initial fast run\n')
         args.fast_run = False
+        if not args.fast_run:
+            printt('fast run is now False')
         
     while CONTINUE_OUTLIER:
         count_auto = 0
         #############################################################
         # beginning of auto dmax/transformation/skip_first while loop
         #############################################################
-        while (dmax == '' or transformation == 'A' or skip_first == '') and count_auto < 3:
+        while (dmax == '' or transformation == 'A' or skip_first == '' or prpoints == '') and count_auto < 3:
             f = open("inputfile.dat",'w')
             f.write('%s\n' % data)
             f.write('%f\n' % qmin)
@@ -376,41 +378,45 @@ if __name__=='__main__':
         CONTINUE_Trans = True
         SECOND_TRY = False
         while CONTINUE_Trans and not args.fast_run:
-            try:
-                ## make input file for running bift
-                f = open("inputfile.dat",'w')
-                f.write('%s\n' % data)
-                f.write('%f\n' % qmin)
-                f.write('%f\n' % qmax)
-                f.write('%s\n' % args.Bg)
-                f.write('%s\n' % args.nrebin)
-                f.write('%s\n' % dmax)
+                
+            ## make input file for running bift
+            f = open("inputfile.dat",'w')
+            f.write('%s\n' % data)
+            f.write('%f\n' % qmin)
+            f.write('%f\n' % qmax)
+            f.write('%s\n' % args.Bg)
+            f.write('%s\n' % args.nrebin)
+            f.write('%s\n' % dmax)
+            f.write('\n')
+            f.write('%s\n' % args.alpha)
+            f.write('%s\n' % args.smear)
+            f.write('\n')
+            f.write('\n')
+            f.write('%s\n' % prpoints)
+            f.write('%s\n' % args.noextracalc)
+            f.write('%s\n' % transformation)
+            f.write('%s\n' % args.fitbackground)
+            f.write('%s\n' % args.rescale_mode) # rescale method. N: non-constant, C: constant, I: intensity-dependent
+            if args.rescale_mode == 'N':
+                f.write('%s\n' % args.nbin)
+            else:
                 f.write('\n')
-                f.write('%s\n' % args.alpha)
-                f.write('%s\n' % args.smear)
-                f.write('\n')
-                f.write('\n')
-                f.write('%s\n' % prpoints)
-                f.write('%s\n' % args.noextracalc)
-                f.write('%s\n' % transformation)
-                f.write('%s\n' % args.fitbackground)
-                f.write('%s\n' % args.rescale_mode) # rescale method. N: non-constant, C: constant, I: intensity-dependent
-                if args.rescale_mode == 'N':
-                    f.write('%s\n' % args.nbin)
-                else:
-                    f.write('\n')
-                f.write('\n')
-                f.close()
+            f.write('\n')
+            f.close()
 
-                ## run bift
+            ## run bift
+            try:
                 os.remove('parameters.dat') # remove parameters file from initial fast run
-                printt("=================================================================================")
-                printt("    Running BayesApp with estimated input parameters")
-                printt("=================================================================================") 
-                with open('inputfile.dat', 'r') as input_file:
-                    result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
-                    
-                ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
+            except FileNotFoundError:
+                pass # file does not exist → nothing to do
+            printt("=================================================================================")
+            printt("    Running BayesApp with estimated input parameters")
+            printt("=================================================================================") 
+            with open('inputfile.dat', 'r') as input_file:
+                result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
+
+            ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
+            try:
                 dmax_value = read_params()[1] # if there is no parameters.dat file, this will give error
                 int(dmax_value) # if dmax_valule is nan, this will give error
                 if dmax[0] == 'f':

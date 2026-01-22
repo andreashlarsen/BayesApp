@@ -1,7 +1,8 @@
 # BayesApp
  *version 2.1*
 
-BayesApp calculated the pair distance distribution function (PDDF or p(r) function) for SAXS or SANS data
+BayesApp calculated the pair distance distribution function (PDDF or p(r) function) for SAXS or SANS data.     
+In addition, the data can be assessed in terms of error assessment and detection of outliers. If opted for,  Guinier plot, the Kratky plot and the Porod plot are provided along with radius of gyration (Guinier analysis), molecular weight estimation (SAXSMow method). 
 
 ## How to install/run
 

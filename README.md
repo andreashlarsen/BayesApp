@@ -1,6 +1,7 @@
 # BayesApp
+ *version 2.1*
+
 BayesApp calculated the pair distance distribution function (PDDF or p(r) function) for SAXS or SANS data
-version 2.1
 
 ## How to install/run
 

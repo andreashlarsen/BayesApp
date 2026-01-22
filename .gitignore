@@ -1,5 +1,10 @@
 # bift executable
 bift
+*.log
+*.dat
+*.png
+results_*.dat.zip
+results_*.dat/
 
 # clean-up script
 clean_up.sh

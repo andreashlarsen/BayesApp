@@ -1,6 +1,6 @@
 # BayesApp
 BayesApp calculated the pair distance distribution function (PDDF or p(r) function) for SAXS or SANS data
-version 2.0
+version 2.1
 
 ## How to install/run
 
@@ -9,9 +9,13 @@ BayesApp can be run through the webapp, which also offers a graphical user inter
 For developers: The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
 
 #### Run locally on your own computer, step 1: compile the fortran code
-To run locally (no GUI), the Fortran code, `bift.f` needs to be compiled, e.g with:
+To run locally (no GUI), the Fortran code, `bift.f` needs to be compiled, e.g. with (linux/mac):
 ```
 gfortran bift.f -march=native -O2 -o bift
+```
+on windows, the executable is assumed to have .exe extension, so, e.g.:
+```
+gfortran bift.f -O2 -o bift.exe
 ```
 The name has to be bift for bayesapp.py to be able to find it
 Requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   

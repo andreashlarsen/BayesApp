@@ -470,17 +470,12 @@ if __name__=='__main__':
         I0,dmax_out,Rg,chi2r,background,alpha_out,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Run_max,Run_max_expect,dRun_max_expect,p_Run_max_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float = read_params()
 
         ## if there are many outliers, then try to gradually (in steps of 50) increase number of points in p(r) and rerun (until prpoints is above 180)
-        # print(Noutlier)
-        # print(Noutlier_prev)
-        # print(args.fast_run)
         if Noutlier > 1 and Noutlier < int(Noutlier_prev*0.8) and not args.fast_run:
             Noutlier_prev = Noutlier
             if dmax[0] == 'f':
                 dmax = 'f%f' % dmax_out
             else:
                 dmax = '%f' % dmax_out # update dmax value
-            # print(dmax)
-            # print(prpoints_float)
             if prpoints_float < 190:
                 printt("=================================================================================")
                 printt("    number of outliers: %d" % Noutlier)
@@ -781,7 +776,8 @@ if __name__=='__main__':
         if Porod_limit:
             qm_Porod = Porod_limit
         else:
-            qm_Porod = np.pi*Ng/dmax
+            useful_qmax = np.pi*Ng/dmax_out
+            qm_Porod = useful_qmax*0.95
         if np.amax(qdat) <= qm_Porod:
             qm_Porod = 0.9*np.amax(qdat)
         idx = np.where(qdat>qm_Porod)
@@ -838,6 +834,7 @@ if __name__=='__main__':
     printt("\n\n\n")
     printt("    Estimated parameters after runnning BayesApp:")
     printt("        dmax:                       %s" % dmax)
+    printt("        dmax:                       %f" % dmax_out)
     printt("        transformation:             %s" % transformation)
     printt("        skip first points:          %d" % skip_first)
     printt("        number of points in p(r):   %s" % prpoints)

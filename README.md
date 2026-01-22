@@ -47,7 +47,7 @@ Optionally, also cite the publication describing the core algorithm (Bayesian In
 If you use or report the `number of good parameters` as a measure for the information content in SAXS/SANS data, please cite:    
 [Vestergaard and Hansen, 2006](https://doi.org/10.1107/S0021889806035291)
 
-If you rescale your errorbars using BayesApp, please cite: 
+If you rescale your errorbars using BayesApp, please cite:     
 [Larsen and Pedersen, 2021](https://doi.org/10.1107/S1600576721006877)
 
 ## Developers/maintainers

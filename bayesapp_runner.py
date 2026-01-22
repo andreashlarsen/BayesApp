@@ -235,7 +235,7 @@ if __name__=='__main__':
             ## estimate dmax from fast run
             if dmax == '':
                 ## retrive dmax from parameter file
-                dmax_value = read_params(qmin,qmax)[1]
+                dmax_value = read_params()[1]
                 dmax = '%s' % dmax_value
 
             ## set transformation depending on negative points in pr in fast run
@@ -273,7 +273,7 @@ if __name__=='__main__':
 
             ## determine skip_first
             if (skip_first == '' and dmax):
-                Rg_value = read_params(qmin,qmax)[2]
+                Rg_value = read_params()[2]
                 try:
                     q,I,dI = np.genfromtxt(data,skip_header=header,skip_footer=footer,usecols=[0,1,2],unpack=True)
                 except:
@@ -401,7 +401,7 @@ if __name__=='__main__':
                     result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
                     
                 ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
-                dmax_value = read_params(qmin,qmax)[1] # if there is no parameters.dat file, this will give error
+                dmax_value = read_params()[1] # if there is no parameters.dat file, this will give error
                 int(dmax_value) # if dmax_valule is nan, this will give error
                 if dmax[0] == 'f':
                     dmax = 'f%f' % dmax_value # set dmax
@@ -467,7 +467,7 @@ if __name__=='__main__':
                         f.write('%e %e %e\n' % (qdat[i],Idat[i],sigma[i]))
     
         ## retrive output from parameter file
-        I0,dmax_out,Rg,chi2r,background,alpha_out,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Run_max,Run_max_expect,dRun_max_expect,p_Run_max_str,NR,NR_expect,dNR_expect,p_NR,qmax_useful,prpoints_float = read_params(qmin,qmax)
+        I0,dmax_out,Rg,chi2r,background,alpha_out,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Run_max,Run_max_expect,dRun_max_expect,p_Run_max_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float = read_params()
 
         ## if there are many outliers, then try to gradually (in steps of 50) increase number of points in p(r) and rerun (until prpoints is above 180)
         # print(Noutlier)
@@ -781,7 +781,7 @@ if __name__=='__main__':
         if Porod_limit:
             qm_Porod = Porod_limit
         else:
-            qm_Porod = qmax_useful*0.95 #np.pi*Ng/dmax
+            qm_Porod = np.pi*Ng/dmax
         if np.amax(qdat) <= qm_Porod:
             qm_Porod = 0.9*np.amax(qdat)
         idx = np.where(qdat>qm_Porod)

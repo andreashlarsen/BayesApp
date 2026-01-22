@@ -54,7 +54,7 @@ def get_header_footer(file):
 
     return header,footer
 
-def read_params(qmin,qmax):
+def read_params():
     """
     retrive output from BIFT parameter file parameters.dat
     """
@@ -77,7 +77,7 @@ def read_params(qmin,qmax):
             tmp = line.split(':')[1]
             chi2r = float(tmp.split('+-')[0])
         if 'Background estimated       :' in line:
-            background =float( line.split(':')[1])
+            background = float(line.split(':')[1])
         if 'Log(alpha) (smoothness)    :' in line:
             tmp = line.split(':')[1]
             alpha = float(tmp.split('+-')[0])
@@ -125,6 +125,4 @@ def read_params(qmin,qmax):
         line = f.readline()
     f.close()
 
-    qmax_useful = np.amin([np.pi*Ng/dmax+qmin,qmax])
-
-    return I0,dmax,Rg,chi2r,background,alpha,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Rmax,Rmax_expect,dRmax_expect,p_Rmax_str,NR,NR_expect,dNR_expect,p_NR,qmax_useful,prpoints_float
+    return I0,dmax,Rg,chi2r,background,alpha,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Rmax,Rmax_expect,dRmax_expect,p_Rmax_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float

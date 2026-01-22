@@ -2,24 +2,25 @@
  *version 2.1*
 
 BayesApp calculated the pair distance distribution function (PDDF or p(r) function) for SAXS or SANS data.     
-In addition, the data can be assessed in terms of error assessment and detection of outliers. If opted for,  Guinier plot, the Kratky plot and the Porod plot are provided along with radius of gyration (Guinier analysis), molecular weight estimation (SAXSMow method). 
+In addition, the errors are assessed (and can be rescaled) and statistical outliers detected (and can be removed).    
+If opted for, Guinier plot, Kratky plot and Porod plot are provided along with radius of gyration (from Guinier analysis), and molecular weight estimation (SAXSMow method, from integration over the Kratky plot). 
 
 ## How to install/run
 
 #### Run throught the web application 
-BayesApp can be run through the webapp, which also offers a graphical user interface (GUI) through our [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
-For developers: The source-code for the web-app is available on the dedicated [GitHub page](https://github.com/ehb54/GenApp-BayesApp).    
+BayesApp can be run through the webapp, which also offers a graphical user interface (GUI). This is offered through our [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
+For developers: The source-code for the web-app is available on the dedicated [GitHub page for the web application](https://github.com/ehb54/GenApp-BayesApp) - with the core program being imported from the present GitHub site.    
 
 #### Run locally on your own computer, step 1: compile the fortran code
-To run locally (no GUI), the Fortran code, `bift.f` needs to be compiled, e.g. with (linux/mac):
+To run locally (no GUI), the Fortran code, `bift.f` needs to be compiled, e.g. with (Linux/MacOS):
 ```
 gfortran bift.f -march=native -O2 -o bift
 ```
-on windows, the executable is assumed to have .exe extension, so, e.g.:
+on Windows, the executable is assumed to have .exe extension (and `-march=native` flag omitted), so, e.g.:
 ```
 gfortran bift.f -O2 -o bift.exe
 ```
-The name has to be bift for bayesapp.py to be able to find it
+The name of the executable has to be `bift` (or `bift.exe` on Windows) for bayesapp.py to be able to find it.      
 Requirements is a gfortran compiler. Compilation is, in our experience, straightforward on Linux (Ubuntu), but troublesome on MacOS/Windows. Unfortunately, we do not have resources to help with compilation.   
 
 #### Run locally on your own computer, step 2: run the python program
@@ -27,7 +28,7 @@ When compilation is done, the program can be run as a standard `python` (python3
 ```
 python bayesapp.py -f datafile.dat
 ````
-with -f (datafile) being the only required input.
+with -f (name/path for the datafile) being the only required input.
 
 ##### requirements
 * `bayesapp_helpfunctions.py` and the executable `bift` or `bift.exe` (compiled version of `bift.f`, see step 1) must be in the same folder. 

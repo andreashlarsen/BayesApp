@@ -165,7 +165,7 @@ if __name__=='__main__':
         shutil.copy2(os.path.join(path, exe), '.') # copy bift executable to current location
     if not (os.path.exists('bift.f') and os.path.samefile(os.path.join(path, 'bift.f'), 'bift.f')):
         shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy fortran code to current location
-        
+
     ## print start bayesapp message
     printt("=================================================================================")
     printt('    Reading data:                   %s' % filename)
@@ -189,7 +189,7 @@ if __name__=='__main__':
         # making fast run false, because else, in this special case:
         # fast run will first be skipped as all the above are provided (dmax, transformation etc), 
         # and then the normal run will also be skipped, so Bayesapp is not run, which gives errors
-        printt('\n    WARNING: changing --fast_run to False, since both dmax, tranformation and skip_first are provided, and these are the numbers that should be determined by the initial fast run\n')
+        printt('\n    WARNING: changing --fast_run to False, since both dmax, tranformation, prpoints, and skip_first are provided, and these are the numbers that should be determined by the initial fast run\n')
         args.fast_run = False
         if not args.fast_run:
             printt('fast run is now False')
@@ -695,7 +695,8 @@ if __name__=='__main__':
                 except:
                     Error_Guinier = True
             if Error_Guinier:
-                printt('\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - contrast match may lead to a negative slope at low q')
+                error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - contrast match may lead to a negative slope at low q'
+                printt(error_message)
                 f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
                 p0.text(0.1,0.7,error_message,transform=p0.transAxes)
                 plt.savefig('Guinier.png',dpi=200)

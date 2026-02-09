@@ -676,13 +676,12 @@ if __name__=='__main__':
                     CONTINUE_GUINIER = False
         
         if qdat[Guinier_skip]*Rg<=qmaxRg:
-
+            Error_Guinier = True
             for i in range(7):
                 idx = np.where(qdat*Rg_Guinier<=qmaxRg)
                 q2 = qdat[idx]**2
                 lnI = np.log(Idat[idx])
                 dlnI = sigma[idx]/Idat[idx]
-        
                 n = len(idx[0])-Guinier_skip
                 while (Guinier_skip > 0) and (n<10):
                     Guinier_skip = Guinier_skip-1
@@ -691,9 +690,9 @@ if __name__=='__main__':
                     a,b = np.polyfit(q2[Guinier_skip:],lnI[Guinier_skip:],1,w=1/dlnI[Guinier_skip:])
                     fit = b+a*q2[Guinier_skip:]
                     Rg_Guinier = (Rg_Guinier + np.sqrt(-3*a))/2
-                    Error_Guinier = False
-                except:
-                    Error_Guinier = True
+                    Error_Guinier = False   
+                except: 
+                    pass                 
             if Error_Guinier:
                 error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - contrast match may lead to a negative slope at low q'
                 printt(error_message)

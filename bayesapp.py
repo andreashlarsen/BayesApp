@@ -209,10 +209,11 @@ if __name__=='__main__':
             f.write('%s\n' % dmax)
             f.write('\n')
             if args.alpha:
-                if args.alpha[0] == 'f':
-                    f.write('f%s\n' % args.alpha)
-                else:
-                    f.write('%s\n' % args.alpha)
+                f.write('%s\n' % args.alpha)
+                #if args.alpha[0] == 'f':
+                #    f.write('f%s\n' % args.alpha)
+                #else:
+                #    f.write('%s\n' % args.alpha)
             else:
                 f.write('f5\n') # fix alpha
             f.write('%s\n' % args.smear)

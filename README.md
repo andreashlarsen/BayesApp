@@ -8,7 +8,7 @@ If opted for, Guinier plot, Kratky plot and Porod plot are provided along with r
 ## How to install/run
 
 #### Run throught the web application 
-The program can be run through the [web app] (https://sastools.org/BayesApp/webapp.html)    
+The program can be run through the [web app](https://sastools.org/BayesApp/webapp.html)    
 <!-- The source-code for the web-app is available on the dedicated [GitHub page for the web application](https://github.com/ehb54/GenApp-BayesApp) - with the core program being imported from the present GitHub site.    -->
 
 #### Run locally on your own computer, step 1: compile the fortran code

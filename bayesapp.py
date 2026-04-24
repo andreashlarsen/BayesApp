@@ -85,18 +85,20 @@ if __name__=='__main__':
     #################################################################################
     ## adjust input
     #################################################################################
-    
-    ## remove spaces and brackets from name
+
+    # read data name
+    data = os.path.basename(args.data_file)
     # data_file = args.data_file
-    prefix = os.path.basename(args.data_file)
+    # prefix = os.path.basename(args.data_file)
     # prefix = data_file.split('/')[-1] 
-    prefix = prefix.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
+
+    ## remove spaces and brackets from name
+    # prefix = prefix.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
+    data = data.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
     
     ## naming bug fix: fortran77 cannot use long file names
-    if len(prefix)>48:
+    if len(data)>48:
         data = 'data_name_too_long_for_fortran77.dat'
-    else:
-        data = prefix
 
     ## import skip first, qmin and qmax
     try:
@@ -156,9 +158,13 @@ if __name__=='__main__':
     ## remove path from filename (for output)
     filename = os.path.basename(args.data_file)
 
-    ## ensure bift and data is at the current location
-    if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
-        shutil.copy2(args.data_file, '.') # copy data file to current location
+    ## ensure data is at the current location, and naming is correct
+    # if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
+        # shutil.copy2(args.data_file, '.') # copy data file to current location
+    if not (os.path.exists(data)):
+        shutil.copy2(args.data_file, data) # copy data file to current location and change name
+    
+    ## ensure bift executable and fortran code are at the current location
     path = os.path.dirname(os.path.realpath(__file__))
     exe = 'bift.exe' if os.name == 'nt' else 'bift'
     if not (os.path.exists(exe) and os.path.samefile(os.path.join(path, exe), exe)):
@@ -870,7 +876,8 @@ if __name__=='__main__':
     if args.zip_compress:
         import zipfile
         import glob 
-        zip_filename = f'results_{prefix}.zip'
+        # zip_filename = f'results_{prefix}.zip'
+        zip_filename = f'results_{data}.zip'
         printt('\n    compressing output to zip file: %s' % zip_filename)
         files_to_zip = ['filename', 'bift.f', exe, 'pr.dat', 'pr_bin.dat', 'pr_smooth.dat','data.dat', 'fit.dat', 'fit_q.dat', 'parameters.dat', 'rescale.dat','outlier_filtered.dat', 'scale_factor.dat', 'bayesapp.log', 'inputfile.dat']
         files_to_zip.extend(glob.glob('*.png')) # add png images

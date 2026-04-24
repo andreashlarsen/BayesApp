@@ -695,12 +695,11 @@ if __name__=='__main__':
                 except: 
                     pass                 
             if Error_Guinier:
-                error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - contrast match may lead to a negative slope at low q'
+                error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - SANS contrast match may lead to a negative slope at low q'
                 printt(error_message)
                 f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
                 p0.text(0.1,0.7,error_message,transform=p0.transAxes)
                 plt.savefig('Guinier.png',dpi=200)
-                plt.close()
             else:
                 qmaxRg = np.sqrt(q2[-1])*Rg_Guinier
                 R = (lnI[Guinier_skip:]-fit)/dlnI[Guinier_skip:]

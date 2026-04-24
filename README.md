@@ -8,8 +8,8 @@ If opted for, Guinier plot, Kratky plot and Porod plot are provided along with r
 ## How to install/run
 
 #### Run throught the web application 
-BayesApp can be run through the webapp, which also offers a graphical user interface (GUI). This is offered through our [GenApp web application](https://somo.chem.utk.edu/bayesapp/).    
-For developers: The source-code for the web-app is available on the dedicated [GitHub page for the web application](https://github.com/ehb54/GenApp-BayesApp) - with the core program being imported from the present GitHub site.    
+The program can be run through the [web app] (https://sastools.org/BayesApp/webapp.html)    
+<!-- The source-code for the web-app is available on the dedicated [GitHub page for the web application](https://github.com/ehb54/GenApp-BayesApp) - with the core program being imported from the present GitHub site.    -->
 
 #### Run locally on your own computer, step 1: compile the fortran code
 To run locally (no GUI), the Fortran code, `bift.f` needs to be compiled, e.g. with (Linux/MacOS):

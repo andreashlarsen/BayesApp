@@ -547,6 +547,7 @@ if __name__=='__main__':
             for x,y,z in zip(r_bin,pr_bin,d_pr_bin):
                 f.write('%10.10f %10.10e %10.10e\n' % (x,y,z))
 
+    """
     ## extend pr on denss r grid to get a continous function
     if pr[1] > 0:
         r_new,pr_new,d_pr_new = np.insert(r, 1, r[1]*0.1), np.insert(pr, 1, pr[1]*0.08), np.insert(d_pr, 1, d_pr[1]) # add virtual point to enforce positive slope at r=0
@@ -567,6 +568,7 @@ if __name__=='__main__':
     with open('pr_smooth.dat','w') as f:
         for x,y in zip(r_dense,pr_dense):
             f.write('%10.10f %10.10e\n' % (x,y))
+    """
 
     ## general plotting settings
     markersize = 4
@@ -575,11 +577,12 @@ if __name__=='__main__':
     ## plot p(r)
     plt.plot(r,np.zeros(len(r)),linestyle='--',color='grey',zorder=0)
     # plt.errorbar(r,pr,yerr=d_pr,marker='.',markersize=markersize,linestyle='None',color='black')
-    plt.plot(r,pr,marker='.',markersize=markersize,linestyle='None',color='black')
+    plt.plot(r,pr,marker='.',markersize=markersize,linewidth=linewidth,color='black')
     if args.make_pr_bin:
-        plt.errorbar(r_bin,pr_bin,d_pr_bin,marker='.',markersize=markersize,linewidth=linewidth,color='green',label='p(r), fixed binsize')
+        # plt.errorbar(r_bin,pr_bin,d_pr_bin,marker='.',markersize=markersize,linewidth=linewidth,color='green',label='p(r), fixed binsize')
+        plt.plot(r_bin,pr_bin,marker='.',markersize=markersize,linewidth=linewidth,color='green',label='p(r), fixed binsize')
         plt.legend(frameon=False)
-    plt.plot(r_dense,pr_dense,linewidth=linewidth,color='black')
+    # plt.plot(r_dense,pr_dense,linewidth=linewidth,color='black')
     # plt.plot(r_dense,spline2(r_dense),linewidth=linewidth,color='red',label='p(r) 0.1')
     # plt.plot(r_dense,spline3(r_dense),linewidth=linewidth,color='green',label='p(r) 0.2')
     # plt.plot(r_dense,spline4(r_dense),linewidth=linewidth,color='blue',label='p(r) 0.5')
@@ -651,7 +654,6 @@ if __name__=='__main__':
     p0.legend(frameon=False)
     plt.tight_layout()
     plt.savefig('Iq.png',dpi=200)
-    
     
     ## Guinier analysis
     if args.Guinier:
@@ -885,7 +887,8 @@ if __name__=='__main__':
         # zip_filename = f'results_{prefix}.zip'
         zip_filename = f'results_{data}.zip'
         printt('\n    compressing output to zip file: %s' % zip_filename)
-        files_to_zip = ['filename', 'bift.f', exe, 'pr.dat', 'pr_bin.dat', 'pr_smooth.dat','data.dat', 'fit.dat', 'fit_q.dat', 'parameters.dat', 'rescale.dat','outlier_filtered.dat', 'scale_factor.dat', 'bayesapp.log', 'inputfile.dat']
+        # files_to_zip = ['filename', 'bift.f', exe, 'pr.dat', 'pr_bin.dat', 'pr_smooth.dat','data.dat', 'fit.dat', 'fit_q.dat', 'parameters.dat', 'rescale.dat','outlier_filtered.dat', 'scale_factor.dat', 'bayesapp.log', 'inputfile.dat']
+        files_to_zip = ['filename', 'bift.f', exe, 'pr.dat', 'pr_bin.dat','data.dat', 'fit.dat', 'fit_q.dat', 'parameters.dat', 'rescale.dat','outlier_filtered.dat', 'scale_factor.dat', 'bayesapp.log', 'inputfile.dat']
         files_to_zip.extend(glob.glob('*.png')) # add png images
         with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for file in files_to_zip:

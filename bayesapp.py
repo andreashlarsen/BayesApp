@@ -44,7 +44,7 @@ if __name__=='__main__':
 
     # optional general inputs
     parser.add_argument('-qmin', '--qmin', default='0', help='Minimum q-value for the scattering curve.')
-    parser.add_argument('-qmax', '--qmax', default='0.7', help='Maximum q-value for the scattering curve.')
+    parser.add_argument('-qmax', '--qmax', default='100', help='Maximum q-value for the scattering curve.')
     parser.add_argument('-units', '--units', default='auto', help='units of data: A or nm')
 
     parser.add_argument('-G', '--Guinier', action='store_true', default=False, help='Guinier plot')
@@ -131,7 +131,7 @@ if __name__=='__main__':
 
     ## automatically detect units
     if args.units == 'auto':
-        if qmax > 2.0:
+        if np.max(q_check) > 2.0:
             units = 'nm'
             if qmax > 7:
                 qmax = 7

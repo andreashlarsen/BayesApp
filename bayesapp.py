@@ -649,8 +649,9 @@ if __name__=='__main__':
         printt("         probably just a numerical instability")
         printt("         try changing the number of points in p(r)")
     p0.legend(frameon=False)
-    plt.savefig('Iq.png',dpi=200)
     plt.tight_layout()
+    plt.savefig('Iq.png',dpi=200)
+    
     
     ## Guinier analysis
     if args.Guinier:
@@ -705,6 +706,7 @@ if __name__=='__main__':
                 printt(error_message)
                 f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
                 p0.text(0.1,0.7,error_message,transform=p0.transAxes)
+                plt.tight_layout()
                 plt.savefig('Guinier.png',dpi=200)
             else:
                 qmaxRg = np.sqrt(q2[-1])*Rg_Guinier
@@ -719,11 +721,13 @@ if __name__=='__main__':
                 p1.plot(q2,q2-q2,color='black',linewidth=linewidth,zorder=1)
                 p0.set_ylabel(r'$ln(I)$')
                 p1.set_xlabel(r'$q^2$ [%s$^{-2}$]' % units)
-                p1.set_ylabel(r'$\Delta lnI/\sigma_{lnI}$')
+                # p1.set_ylabel(r'$\Delta lnI/\sigma_{lnI}$')
+                p1.set_ylabel(r'$\Delta lnI\cdot I/\sigma$') # inserted the expression for the uncertainty of lnI
                 p1.set_ylim([-Rmax,Rmax])
                 p1.set_yticks([-Rmax,0,Rmax])
                 p0.set_title('Guinier plot')
                 p0.legend(frameon=False)
+                plt.tight_layout()
                 plt.savefig('Guinier.png',dpi=200)
         else:
             Rg_Guinier = 0
@@ -731,6 +735,7 @@ if __name__=='__main__':
             printt(error_message)
             f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
             p0.text(0.1,0.7,error_message,transform=p0.transAxes)
+            plt.tight_layout()
             plt.savefig('Guinier.png',dpi=200)
 
     ## Kratky
@@ -849,8 +854,9 @@ if __name__=='__main__':
             printt("WARNING: Some residuals are either NaN or inf - bad fit?")
             printt("         probably just a numerical instability")
             printt("         try changing the number of points in p(r)")
-        plt.savefig('Iq_rs.png',dpi=200)
         plt.tight_layout()
+        plt.savefig('Iq_rs.png',dpi=200)
+        
 
     ## output values
     printt("\n\n\n")

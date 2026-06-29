@@ -1857,10 +1857,16 @@ c*********************************************
  1965 format(1x,'Axial ratio from prior     : ',f9.2,
      -'  +- ',f8.2,' ')
       endif
-
+      if((chi2r.le.1000)) then
       write(166,961)chi2r,schi2r
+      else
+      write(166,9611)chi2r,schi2r
+      endif
   961 format(1x,'Reduced Chi-square         : ',f9.2,
      -'  +- ',f8.2,' ')
+ 9611 format(1x,'Reduced Chi-square         : ',e9.2,
+     -'  +- ',e8.2,' ')  
+        
       if(background.ne.0) then
       write(166,962)background
   962 format(1x,'Background estimated       : ',10x,f12.5)
@@ -2581,8 +2587,11 @@ c**************************************************************************
 
       DO 150 I=jmin,NTOT+nextra
 c      SADD=-(f(i)-m(i))**2/sigma(i)
-c     include radius-dependent weighting, x(i)/x(ntot):
-      SADD=-x(i)/x(ntot)*(f(i)-m(i))**2/sigma(i)
+c     include radius-dependent weighting, xf(i)/xf(ntot):
+c      SADD=-x(i)/x(ntot)*(f(i)-m(i))**2/sigma(i)
+c      SADD=-xf(i)/xf(ntot)*(f(i)-m(i))**2/sigma(i)
+      SADD=-xf(i)*(f(i)-m(i))**2/sigma(i)
+c      SADD=-(f(i)-m(i))**2/sigma(i)
       if(answerm.eq.'Q'.and.i.ge.1) SADD=-F(I)*LOG(F(I)/M(I))+F(I)-M(I)
       S=S+SADD
   133 GRADSI=-2*(f(i)-m(i))/sigma(i)

@@ -339,6 +339,7 @@ if __name__=='__main__':
                     a,b = np.polyfit(xx[skip_first:-last],yy[skip_first:-last],1)
                     if a>=0:
                         skip_first = 0
+                        Rg_calc = Rg_value
                     else:
                         Rg_calc = np.sqrt(-3*a)
                     #check qmaxRg is below 1.4
@@ -718,7 +719,7 @@ if __name__=='__main__':
 
                 f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
                 p0.errorbar(q2,lnI,yerr=dlnI,linestyle='none',marker='.',markersize=markersize,color='red',zorder=0)
-                p0.plot(q2[Guinier_skip:],fit,color='black',linewidth=linewidth,zorder=1,label='$R_g$=%1.2f, $q_{max}R_g$=%1.2f, $\chi^2_r$=%1.1f, skipped_points=%d' % (Rg_Guinier,qmaxRg,chi2r_Guinier,Guinier_skip))
+                p0.plot(q2[Guinier_skip:],fit,color='black',linewidth=linewidth,zorder=1,label=r'$R_g$=%1.2f, $q_{max}R_g$=%1.2f, $\chi^2_r$=%1.1f, skipped_points=%d' % (Rg_Guinier,qmaxRg,chi2r_Guinier,Guinier_skip))
                 p1.plot(q2[Guinier_skip:],R,linestyle='none',marker='.',markersize=markersize,color='red',zorder=0)
                 p1.plot(q2,q2-q2,color='black',linewidth=linewidth,zorder=1)
                 p0.set_ylabel(r'$ln(I)$')

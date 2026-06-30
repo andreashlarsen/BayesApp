@@ -70,9 +70,11 @@ def read_params():
         if 'Maximum diameter           :' in line:
             tmp = line.split(':')[1]
             dmax = float(tmp.split('+-')[0])
+            d_dmax = float(tmp.split('+-')[1])
         if 'Radius of gyration         :' in line:
             tmp = line.split(':')[1]
             Rg = float(tmp.split('+-')[0])
+            d_Rg = float(tmp.split('+-')[1])
         if 'Reduced Chi-square         :' in line:
             tmp = line.split(':')[1]
             chi2r = float(tmp.split('+-')[0])
@@ -125,4 +127,4 @@ def read_params():
         line = f.readline()
     f.close()
 
-    return I0,dmax,Rg,chi2r,background,alpha,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Rmax,Rmax_expect,dRmax_expect,p_Rmax_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float
+    return I0,dmax,Rg,chi2r,background,alpha,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Rmax,Rmax_expect,dRmax_expect,p_Rmax_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float,d_dmax,d_Rg

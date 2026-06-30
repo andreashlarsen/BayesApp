@@ -17,7 +17,7 @@ if __name__=='__main__':
     ### start timing
     start_time = time.time()
 
-    ## current version
+    ## current version of BayesApp
     version = 2.1
 
     ### welcome message
@@ -42,7 +42,7 @@ if __name__=='__main__':
     # mandatory inputs
     parser.add_argument('-f', '--data_file', required=True, help='path to data')
 
-    # optional general inputs
+    # optional inputs
     parser.add_argument('-qmin', '--qmin', default='0', help='Minimum q-value for the scattering curve.')
     parser.add_argument('-qmax', '--qmax', default='100', help='Maximum q-value for the scattering curve.')
     parser.add_argument('-units', '--units', default='auto', help='units of data: A or nm')
@@ -88,12 +88,8 @@ if __name__=='__main__':
 
     # read data name
     data = os.path.basename(args.data_file)
-    # data_file = args.data_file
-    # prefix = os.path.basename(args.data_file)
-    # prefix = data_file.split('/')[-1] 
 
     ## remove spaces and brackets from name
-    # prefix = prefix.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
     data = data.replace(" ","_").replace("(","").replace(")","").replace("[","").replace("]","")
     
     ## naming bug fix: fortran77 cannot use long file names
@@ -106,14 +102,18 @@ if __name__=='__main__':
     except:
         skip_first = ''
     try:
-        qmax = float(args.qmax)
-    except:
-        qmax = 100.0
-    try:
         qmin = float(args.qmin)
     except:
         qmin = 0.0
+    try:
+        qmax = float(args.qmax)
+    except:
+        qmax = 100.0
+
+    ## read number of header and footer lines in data file
     header,footer = get_header_footer(args.data_file)
+
+    ## read q from data, and update qmin and qmax if needed
     try:
         if skip_first:
             q_check = np.genfromtxt(args.data_file,skip_header=header+skip_first,skip_footer=footer,usecols=[0],unpack=True)
@@ -129,6 +129,12 @@ if __name__=='__main__':
     if q_check[-1] < qmax:
         qmax = q_check[-1]
 
+    ## check validity of q range
+    q_diff = qmax - qmin
+    if q_diff < 0.0:
+        printt('\n\n!!!ERROR!!!\nqmin should be smaller than qmax.\n')
+        sys.exit()
+
     ## automatically detect units
     if args.units == 'auto':
         if np.max(q_check) > 2.0:
@@ -139,12 +145,6 @@ if __name__=='__main__':
             units = 'A'
             if qmax > 0.7:
                 qmax = 0.7
-
-    ## check validity of q range
-    q_diff = qmax - qmin
-    if q_diff < 0.0:
-        printt('\n\n!!!ERROR!!!\nqmin should be smaller than qmax.\n')
-        sys.exit()
 
     ## rename and convert input
     dmax = args.dmax
@@ -159,27 +159,25 @@ if __name__=='__main__':
     filename = os.path.basename(args.data_file)
 
     ## ensure data is at the current location, and naming is correct
-    # if not (os.path.exists(filename) and os.path.samefile(args.data_file, filename)):
-        # shutil.copy2(args.data_file, '.') # copy data file to current location
     if not (os.path.exists(data)):
         shutil.copy2(args.data_file, data) # copy data file to current location and change name
     
-    ## ensure bift executable and fortran code are at the current location
+    ## ensure BIFT executable (bift) and Fortran source code (bift.f) are at the current location
     path = os.path.dirname(os.path.realpath(__file__))
     exe = 'bift.exe' if os.name == 'nt' else 'bift'
     if not (os.path.exists(exe) and os.path.samefile(os.path.join(path, exe), exe)):
         shutil.copy2(os.path.join(path, exe), '.') # copy bift executable to current location
     if not (os.path.exists('bift.f') and os.path.samefile(os.path.join(path, 'bift.f'), 'bift.f')):
-        shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy fortran code to current location
+        shutil.copy2(os.path.join(path, 'bift.f'), '.') # copy Fortran source code to current location
 
     ## print start bayesapp message
     printt("=================================================================================")
     printt('    Reading data:                   %s' % filename)
     printt('        header lines in datafile:   %d' % header)
     printt('        footer lines in datafile:   %d' % footer)
-    printt('        q min:                      %f' % q_check[0])
+    printt('        q min in data:              %f' % q_check[0])
     printt('        q min used                  %f' % qmin)
-    printt('        q max:                      %f' % q_check[-1])
+    printt('        q max in data:              %f' % q_check[-1])
     printt('        q max used                  %f' % qmax)
     printt('        number of points in data:   %d' % len(q_check))
     printt('        data rebinned to around:    %s points' % args.nrebin)
@@ -189,8 +187,11 @@ if __name__=='__main__':
     ##################################
     # beginning of outlier while loop 
     ##################################
-    CONTINUE_OUTLIER = True
-    count_ite,max_ite,Noutlier_prev,outliers_removed = 0,20,1e3,0
+
+
+    # the idea of the next section is first to run a fast run with BIFT to reasonalbe input params, then run a more accurate run
+
+    # if all parameters are set, skip the fast run to avoid an error
     if not dmax == '' and not transformation == 'A' and not skip_first == '' and not prpoints == '' and args.fast_run:
         # making fast run false, because else, in this special case:
         # fast run will first be skipped as all the above are provided (dmax, transformation etc), 
@@ -199,39 +200,40 @@ if __name__=='__main__':
         args.fast_run = False
         if not args.fast_run:
             printt('fast run is now False')
-        
+
+    # the following outlier loop can be used to remove outliers from the data iteratively (max 20 iterations) - if opted for
+    CONTINUE_OUTLIER = True
+    count_ite,max_ite,Noutlier_prev,outliers_removed = 0,20,1e3,0
     while CONTINUE_OUTLIER:
         count_auto = 0
         #############################################################
         # beginning of auto dmax/transformation/skip_first while loop
         #############################################################
+        # run up to 3 times (count_auto) to automatically determine good input params
         while (dmax == '' or transformation == 'A' or skip_first == '' or prpoints == '') and count_auto < 3:
+            # write an inputfile to be given to bift executable (bift)
             f = open("inputfile.dat",'w')
             f.write('%s\n' % data)
             f.write('%f\n' % qmin)
             f.write('%f\n' % qmax)
             f.write('%s\n' % args.Bg)
-            f.write('200\n') # nrebin set to 200
+            f.write('200\n') # nrebin data to 200 points in the fast run
             f.write('%s\n' % dmax)
             f.write('\n')
             if args.alpha:
                 f.write('%s\n' % args.alpha)
-                #if args.alpha[0] == 'f':
-                #    f.write('f%s\n' % args.alpha)
-                #else:
-                #    f.write('%s\n' % args.alpha)
             else:
-                f.write('f5\n') # fix alpha
+                f.write('f5\n') # fix log(alpha) to 5 in the fast run if no user input is given
             f.write('%s\n' % args.smear)
             f.write('\n')
             f.write('\n')
             if prpoints == '':
-                f.write('70\n') #set pr points in fast run
+                f.write('70\n') # set pr points (number of points in r of p(r)) in the fast run - if no user input is given
             else:
                 f.write('%s\n' % prpoints)
-            f.write('\n') # 0 extra error calculations
+            f.write('\n') # 0 extra error calculations in the fast run - no need for good error estimates
             if transformation == 'A':
-                f.write('D\n') # use Debye transformations, if nothing is opted for
+                f.write('D\n') # use Debye transformations (positivity constraint), if nothing is opted for by the user
             else:
                 f.write('%s\n' % transformation)
             f.write('%s\n' % args.fitbackground)
@@ -248,23 +250,24 @@ if __name__=='__main__':
             printt("    Fast run for input parameter estimation")
             printt("=================================================================================")
             with open('inputfile.dat', 'r') as input_file:
-                #result = subprocess.run([exe], stdin=input_file)
                 result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
 
             ## estimate dmax from fast run
             if dmax == '':
-                ## retrive dmax from parameter file
+                ## retrive dmax from parameter file (parameters.dat) using the read_params() function from bayesapp_helpfunctions.py
                 dmax_value = read_params()[1]
                 dmax = '%s' % dmax_value
 
-            ## set transformation depending on negative points in pr in fast run
+            ## set transformation. If thre were negative points in the p(r) from the fast run, set to negative (N)
             if transformation == 'A':
+                # A for auto (not selected by the user)
                 r,pr,d_pr = np.genfromtxt('pr.dat',skip_header=0,usecols=[0,1,2],unpack=True)
                 threshold_pr = np.max(pr)*1E-5
                 contain_negative_entries = np.any(pr<-threshold_pr)
                 if contain_negative_entries:
                     transformation = 'N' # N for negative (allow negative values)
                     if dmax[0] == 'f':
+                        # if dmax if forced to a value by the user by prefix f, do not change dmax, else change it to use input (or default value)
                         pass
                     else:
                         dmax = args.dmax # reset dmax
@@ -274,6 +277,7 @@ if __name__=='__main__':
                     transformation = 'D'
 
             ## set prpoints from dmax in fast run
+            # if dmax is large, use more points in pr (slower but needed for large particles)
             if (prpoints == '' and dmax): 
                 if dmax[0] == 'f':
                     dmax_aa = float(dmax[1:])
@@ -285,14 +289,16 @@ if __name__=='__main__':
 
                 threshold_dmax_aa = 180
                 if dmax_aa > threshold_dmax_aa:
-                    tmp = int(np.amin([dmax_aa/3,150])) # set prpoints to dmax/3, but maximum 150
+                    tmp = int(np.amin([dmax_aa/3,150])) # set prpoints to dmax/3, but max 150
                     prpoints = '%d' % tmp
                 else:
                     prpoints = '60' # min value of prpoints
 
             ## determine skip_first
             if (skip_first == '' and dmax):
+                # read Rg value from the fast run
                 Rg_value = read_params()[2]
+                # read data
                 try:
                     q,I,dI = np.genfromtxt(data,skip_header=header,skip_footer=footer,usecols=[0,1,2],unpack=True)
                 except:
@@ -301,6 +307,7 @@ if __name__=='__main__':
                 idx_nonzero = np.where(dI!=0)
                 q,I,dI = q[idx_nonzero],I[idx_nonzero],dI[idx_nonzero]
 
+                ## use Guinier analysis to determine how many first points to skip (if any)
                 xx = q**2
                 yy = np.log(abs(I))
                 dyy = dI/abs(I)
@@ -308,7 +315,7 @@ if __name__=='__main__':
                 qmax_Guinier = 1.25/Rg_value
                 if qmax_Guinier > qmin:
                     last = M-np.where(q<qmax_Guinier)[0][-1]
-                    skip_first_max = 25
+                    skip_first_max = 25 # never skip more than 25 points
                     n = np.min([len(q[:-last]),skip_first_max+2])
                     skip_first_array = range(0,n)
                     i = 0
@@ -327,7 +334,9 @@ if __name__=='__main__':
                         R = (yfit-y)/dy
                         chi2r = np.sum(R**2)/(N-3)
                         chi2r_dif = (chi2r_prev - chi2r)/chi2r
+                        # condition for convergence - relative chi2r difference should be above 30%
                         if abs(R[0]) < 1.5 and chi2r_dif<0.3:
+                            # 2 yellow cards (red card) is convergence
                             YELLOW_CARDS += 1
                         i +=1
                         chi2r_prev = chi2r
@@ -342,7 +351,7 @@ if __name__=='__main__':
                         Rg_calc = Rg_value
                     else:
                         Rg_calc = np.sqrt(-3*a)
-                    #check qmaxRg is below 1.4
+                    #check qmaxRg is below 1.4  
                     qmaxRg = qmax_Guinier*Rg_value
                     qmaxRg_calc = qmax_Guinier*Rg_calc
                     if qmaxRg > 1.4:
@@ -369,6 +378,8 @@ if __name__=='__main__':
                             pass
                         else:
                             dmax = '' # reset dmax
+
+        ## summarize results from fast run
         printt("\n\n\n")
         printt("    Estimated input parameters from fast run:")
         printt("        dmax:                           %s" % dmax)
@@ -387,7 +398,7 @@ if __name__=='__main__':
         SECOND_TRY = False
         while CONTINUE_Trans and not args.fast_run:
                 
-            ## make input file for running bift
+            ## make input file for running bift (accurate run)
             f = open("inputfile.dat",'w')
             f.write('%s\n' % data)
             f.write('%f\n' % qmin)
@@ -412,9 +423,9 @@ if __name__=='__main__':
             f.write('\n')
             f.close()
 
-            ## run bift
+            ## run BIFT
             try:
-                os.remove('parameters.dat') # remove parameters file from initial fast run
+                os.remove('parameters.dat') # remove parameters file from the initial fast run
             except FileNotFoundError:
                 pass # file does not exist → nothing to do
             printt("=================================================================================")
@@ -423,7 +434,7 @@ if __name__=='__main__':
             with open('inputfile.dat', 'r') as input_file:
                 result = subprocess.run([os.path.join(os.getcwd(), exe)], stdin=input_file)
 
-            ## import params data to check that bift was running ok (if not, algorithm will change transformation and try again)
+            ## import params data to check that BIFT was running ok (if not, algorithm will change transformation and try again)
             try:
                 dmax_value = read_params()[1] # if there is no parameters.dat file, this will give error
                 int(dmax_value) # if dmax_valule is nan, this will give error
@@ -434,18 +445,21 @@ if __name__=='__main__':
                 CONTINUE_Trans = False
             except:
                 if SECOND_TRY:
+                    # second try also failed - give error, suggestions, and quit
                     CONTINUE_Trans = False
                     printt("=================================================================================")
                     printt("    Could not find a solution. Try changing Maximum distance, Transformation, alpha, Number of points in pr, or Skip first points")
                     printt("=================================================================================")
                     exit()
                 elif transformation in ['N','M']:
+                    # change transformation from N or M to D (positivity constraint)
                     transformation = 'D'
                     printt("=================================================================================")
                     printt("    No solution - running again with new transformation: %s" % transformation)
                     printt("=================================================================================")
                     SECOND_TRY = True
                 elif transformation == 'D':
+                    # change transformation from D (positivity constraint) to N (allow negative values)
                     transformation = 'N'
                     printt("=================================================================================")
                     printt("    No solution - running again with new transformation: %s" % transformation)
@@ -470,6 +484,7 @@ if __name__=='__main__':
         maxR_rs = np.ceil(np.amax(abs(R_rs)))
 
         ## outlier analysis
+        # calculate p-value
         x = np.linspace(-10,10,1000)
         pdx = np.exp(-x**2/2)
         norm = np.sum(pdx)
@@ -477,11 +492,11 @@ if __name__=='__main__':
         for i in range(len(R)):
             idx_i = np.where(x>=abs(R[i]))
             p[i] = np.sum(pdx[idx_i])
-        p /= norm
+        p /= norm # normalize value
         p *= len(R) # correction for multiple testing
-        idx = np.where(p<0.01)
+        idx = np.where(p<0.01) # find statistical outliers
         Noutlier = len(idx[0])
-        idx_max = np.argmax(abs(R))
+        idx_max = np.argmax(abs(R)) # find the worst outlier
         filename_outlier = 'outlier_filtered.dat'
         if Noutlier:
             with open(filename_outlier,'w') as f:
@@ -491,7 +506,7 @@ if __name__=='__main__':
                         f.write('%e %e %e\n' % (qdat[i],Idat[i],sigma[i]))
     
         ## retrive output from parameter file
-        I0,dmax_out,Rg,chi2r,background,alpha_out,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Run_max,Run_max_expect,dRun_max_expect,p_Run_max_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float = read_params()
+        I0,dmax_out,Rg,chi2r,background,alpha_out,Ng,Ns,evidence,Prob,Prob_str,assessment,beta,Run_max,Run_max_expect,dRun_max_expect,p_Run_max_str,NR,NR_expect,dNR_expect,p_NR,prpoints_float,d_dmax_out,d_Rg = read_params()
 
         ## if there are many outliers, then try to gradually (in steps of 50) increase number of points in p(r) and rerun (until prpoints is above 180)
         if Noutlier > 1 and Noutlier < int(Noutlier_prev*0.8) and not args.fast_run:
@@ -512,6 +527,7 @@ if __name__=='__main__':
                 CONTINUE_OUTLIER = False
             printt("=================================================================================")
         # remove worst outlier and run again
+        # this is then done iterative untill all outliers are removed
         elif args.outlier_ite and Noutlier:
             data = filename_outlier
             printt("=================================================================================")
@@ -519,13 +535,13 @@ if __name__=='__main__':
             printt("removing worst oulier and rerunning")
             printt("=================================================================================")
             CONTINUE_OUTLIER = Noutlier
-            outliers_removed += 1
+            outliers_removed += 1 # count number of removed outliers
         else:
             CONTINUE_OUTLIER = False
         count_ite += 1
         if count_ite >= max_ite:
             CONTINUE_OUTLIER = False
-            printt('max iterations in outlier removal reached (=%d). prabably something wrong with error estimates in data' % max_ite)
+            printt('max iterations in outlier removal reached (=%d). There could be something wrong with error estimates in data' % max_ite)
 
     ###########################
     # end of oulier while loop 
@@ -535,7 +551,7 @@ if __name__=='__main__':
     r,pr,d_pr = np.genfromtxt('pr.dat',skip_header=0,usecols=[0,1,2],unpack=True)
 
     if args.make_pr_bin:
-        ## intepolate pr on grid with binsize of pr_binsize
+        ## if opted for, intepolate pr on grid with binsize of pr_binsize
         if units == 'nm':
             pr_binsize /= 10
         r_bin = np.arange(0,r[-1],pr_binsize)
@@ -548,28 +564,9 @@ if __name__=='__main__':
             for x,y,z in zip(r_bin,pr_bin,d_pr_bin):
                 f.write('%10.10f %10.10e %10.10e\n' % (x,y,z))
 
-    """
-    ## extend pr on denss r grid to get a continous function
-    if pr[1] > 0:
-        r_new,pr_new,d_pr_new = np.insert(r, 1, r[1]*0.1), np.insert(pr, 1, pr[1]*0.08), np.insert(d_pr, 1, d_pr[1]) # add virtual point to enforce positive slope at r=0
-    else:
-        r_new,pr_new,d_pr_new = r,pr,d_pr
-    r_new,pr_new,d_pr_new = np.insert(r_new, 0, -2), np.insert(pr_new, 0, 0.0), np.insert(d_pr_new, 0, d_pr_new[1]) # add virtual point at minus to avoid boundary oscillation
-    try:
-        d_pr_new[d_pr_new == 0] = np.sort(np.unique(d_pr_new))[1]*0.01  # avoid division by zero
-        w_pr = 1.0 / d_pr_new # define weights 
-    except:
-        w_pr = np.ones_like(pr_new) # define weights
-    spline = UnivariateSpline(r_new, pr_new, w=w_pr, s=0.05 * len(r_new)) # smoothing spline and interpolation on dense r grid
-    # spline2 = UnivariateSpline(r_new, pr_new, w=w_pr, s=0.1 * len(r_new)) # smoothing spline and interpolation on dense r grid
-    # spline3 = UnivariateSpline(r_new, pr_new, w=w_pr, s=0.2 * len(r_new)) # smoothing spline and interpolation on dense r grid
-    # spline4 = UnivariateSpline(r_new, pr_new, w=w_pr, s=0.5 * len(r_new)) # smoothing spline and interpolation on dense r grid
-    r_dense = np.linspace(0, r_new.max(), len(r_new)*20)
-    pr_dense = spline(r_dense)
-    with open('pr_smooth.dat','w') as f:
-        for x,y in zip(r_dense,pr_dense):
-            f.write('%10.10f %10.10e\n' % (x,y))
-    """
+    ###########################
+    # plot results!
+    ###########################
 
     ## general plotting settings
     markersize = 4
@@ -680,6 +677,7 @@ if __name__=='__main__':
                     R = (lnI[Guinier_skip:]-fit)
                     Rmean = np.mean(abs(R))
                     if abs(R[0]) > Rmean*2:
+                        # if upturn, skip more points
                         Guinier_skip += 1
                     else:
                         CONTINUE_GUINIER = False
@@ -687,23 +685,27 @@ if __name__=='__main__':
                     CONTINUE_GUINIER = False
         
         if qdat[Guinier_skip]*Rg<=qmaxRg:
-            Error_Guinier = True
+            # determine Rg from Guinier iteratively
             for i in range(7):
                 idx = np.where(qdat*Rg_Guinier<=qmaxRg)
                 q2 = qdat[idx]**2
                 lnI = np.log(Idat[idx])
                 dlnI = sigma[idx]/Idat[idx]
                 n = len(idx[0])-Guinier_skip
-                while (Guinier_skip > 0) and (n<10):
-                    Guinier_skip = Guinier_skip-1
-                    n = n+1
+                # forgot the motivation for these lines?:
+                #while (Guinier_skip > 0) and (n<10):
+                #    Guinier_skip = Guinier_skip-1
+                #    n = n+1
                 try:
-                    a,b = np.polyfit(q2[Guinier_skip:],lnI[Guinier_skip:],1,w=1/dlnI[Guinier_skip:])
-                    fit = b+a*q2[Guinier_skip:]
-                    Rg_Guinier = (Rg_Guinier + np.sqrt(-3*a))/2
-                    Error_Guinier = False   
+                    if len(q2[Guinier_skip:]) > 4:
+                        a,b = np.polyfit(q2[Guinier_skip:],lnI[Guinier_skip:],1,w=1/dlnI[Guinier_skip:])
+                        fit = b+a*q2[Guinier_skip:]
+                        Rg_Guinier = (Rg_Guinier + np.sqrt(-3*a))/2
+                        Error_Guinier = False   
+                    else: 
+                        Error_Guinier = True
                 except: 
-                    pass                 
+                    Error_Guinier = True                 
             if Error_Guinier:
                 error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe try to skip some of the first points?\n - interparticle interactions may lead to a negative slope at low q\n - SANS contrast match may lead to a negative slope at low q'
                 printt(error_message)
@@ -733,7 +735,7 @@ if __name__=='__main__':
                 plt.tight_layout()
                 plt.savefig('Guinier.png',dpi=200)
         else:
-            Rg_Guinier = 0
+            Rg_Guinier = float('nan')
             error_message = '\nERROR in Guinier fit\n - do you have a defined Guinier region?\n - maybe you skipped too many points?\n - maybe your sample is large (>hundreds of nm)?'
             printt(error_message)
             f,(p0,p1) = plt.subplots(2,1,gridspec_kw={'height_ratios': [4,1]},sharex=True)
@@ -741,37 +743,43 @@ if __name__=='__main__':
             plt.tight_layout()
             plt.savefig('Guinier.png',dpi=200)
 
+
+    ## Kratky and Mw calculation (assuming pure protein)
+
+    # subtract constant from data (background estimated by BIFT)
+    I_sub,I0_sub = Idat-background,I0-background
+    
+    # calculate Mw from integrating the Kratky plot to get Porod volume and convert to Mw
+    qRg = qdat*Rg
+    if units == 'nm':
+        qdat_aa = qdat*0.1
+        Rg_aa = Rg*10
+    else:
+        qdat_aa = qdat
+        Rg_aa = Rg
+    qm = np.amin([8.0/Rg_aa,np.amax(qdat_aa)])
+    relative_uncertainty = np.max([Rg_aa/300,0.1]) # Ficher et al 2010 J. Appl. Cryst. (2010). 43, 101-109
+    idx = np.where(qRg <= 8.0)
+    yy = qdat_aa**2*I_sub
+    dq_aa = (np.amax(qdat_aa[idx])-np.amin(qdat_aa[idx]))/len(idx[0])
+    Qt = np.sum(yy[idx])*dq_aa # scattering invariant
+    Vt = 2*np.pi**2*I0_sub/Qt # A^3
+    Vt_nm = Vt/1000
+    MwP = 0.625 * Vt_nm # Petoukhov et al 2012, 0.625 kDa/nm3
+    
+    # Piiadov et al 2018 Protein Science  https://doi.org/10.1002/pro.3528
+    qm2,qm3,qm4 = qm**2,qm**3,qm**4
+    A = -2.114e6*qm**4 + 2.920e6*qm3 - 1.472e6*qm2 + 3.349e5*qm - 3.577e4
+    B =                  12.09*qm3   - 9.39*qm2    + 3.03*qm    + 0.29
+    Vm = A+B*Vt # A^3
+    Vm_nm = Vm/1000 # nm^3
+    MwF = 0.83 * Vm_nm # Squire and Himmel 1979, 0.83 kDa/nm3 --> 0.83/1000 kDa/A3
+    dMwF = MwF * relative_uncertainty
+
     ## Kratky
     if args.Kratky or args.Kratky_dim:
-
-        # subtract constant from data
-        I_sub,I0_sub = Idat-background,I0-background
-        
-        # calculate Mw from integrating the Kratky plot
-        qRg = qdat*Rg
+        # Mw in label?
         if args.Kratky_Mw:
-            if units == 'nm':
-                qdat_aa = qdat*0.1
-                Rg_aa = Rg*10
-            else:
-                qdat_aa = qdat
-                Rg_aa = Rg
-            qm = np.amin([8.0/Rg_aa,np.amax(qdat_aa)])
-            relative_uncertainty = np.max([Rg_aa/300,0.1]) # Ficher et al 2010 J. Appl. Cryst. (2010). 43, 101-109
-            idx = np.where(qRg <= 8.0)
-            yy = qdat_aa**2*I_sub
-            dq_aa = (np.amax(qdat_aa[idx])-np.amin(qdat_aa[idx]))/len(idx[0])
-            Qt = np.sum(yy[idx])*dq_aa # scattering invariant
-            Vt = 2*np.pi**2*I0_sub/Qt
-            #MwP = 0.625/1000 * Vt # Petoukhov et al 2012, 0.625 kDa/nm3 -> 0.625/1000 kDa/A3
-           
-            # Piiadov et al 2018 Protein Science  https://doi.org/10.1002/pro.3528
-            qm2,qm3,qm4 = qm**2,qm**3,qm**4
-            A = -2.114e6*qm**4 + 2.920e6*qm3 - 1.472e6*qm2 + 3.349e5*qm - 3.577e4
-            B =                  12.09*qm3   - 9.39*qm2    + 3.03*qm    + 0.29
-            Vm = A+B*Vt # A
-            MwF = 0.83/1000 * Vm # Squire and Himmel 1979, 0.83 kDa/nm3 --> 0.83/1000 kDa/A3
-            dMwF = MwF * relative_uncertainty
             label = 'Mw = %1.1f +/- %1.1fkDa' % (MwF,dMwF)
         else:
             label = ''
@@ -860,22 +868,54 @@ if __name__=='__main__':
         plt.tight_layout()
         plt.savefig('Iq_rs.png',dpi=200)
         
-
     ## output values
     printt("\n\n\n")
     printt("    Estimated parameters after runnning BayesApp:")
-    printt("        dmax:                       %s" % dmax)
-    printt("        dmax:                       %f" % dmax_out)
+    # printt("        dmax:                       %s" % dmax)
+    printt("        dmax:                       %.4f +- %.4f %s" % (dmax_out,d_dmax_out,units))
+    printt("        Rg from p(r):               %.4f +- %.4f %s" % (Rg,d_Rg,units))
+    if args.Guinier:
+        printt("        Rg from Guinier analysis:   %.4f" % Rg_Guinier)
+    # if args.Kratky_Mw:
+    printt("        Mw (assuming protein):      %1.1f +/- %1.1f kDa" % (MwF,dMwF))
     printt("        transformation:             %s" % transformation)
     printt("        skip first points:          %d" % skip_first)
     printt("        number of points in p(r):   %s" % prpoints)
     printt("        number of outliers:         %d" % Noutlier)
     printt("        number of outliers removed: %d" % outliers_removed)
-    if args.Guinier:
-        printt("        Rg from Guinier analysis:   %f" % Rg_Guinier)
-    if args.Kratky_Mw:
-        printt("        Mw from Kratky integration: %1.1f +/- %1.1f kDa" % (MwF,dMwF))
 
+    ## export SASBDB-readable p(r) file
+    with open('pr.dat','w') as f:
+        f.write('# p(r) from BayesApp version %s\n' % version)
+        f.write('# data = %s\n' % data)
+        f.write('# Radius of gyration from p(r), Rg = %.4f +- %.4f %s\n' % (Rg,d_Rg,units))
+        if args.Guinier:
+            f.write('# Radius of gyration from Guinier, Rg = %.4f %s\n' % (Rg_Guinier,units))
+        else:
+            f.write('# Radius of gyration from Guinier, Rg = %.4f %s\n' % (float('nan'),units))
+        f.write('# Maximum distance, dmax = %.4f +- %.4f %s\n' % (dmax_out,d_dmax_out,units))
+        if units == 'A':
+            f.write('# apparent Porod Volume, Vp = %.2f %s^3\n' % (Vt,units))
+            f.write('# refined particle Volume, Vm = %.2f %s^3\n' % (Vm,units))
+        elif units == 'nm':
+            f.write('# truncatated Porod Volume, Vp = %.2f %s^3\n' % (Vt_nm,units))
+            f.write('# estimated particle Volume, Vm = %.2f %s^3\n' % (Vm_nm,units))
+        else:
+            printt('ERROR: no units defined')
+            exit()
+        f.write('# Molecular weight, Mw = %.2f +- %.2f kDa\n' % (MwF,dMwF))
+        f.write('#\n')
+        f.write('# Notes and references:\n')
+        f.write('# Vp is a optimized for Mw estimation, not a best estimate of particle volume (Petoukhov et al., 2007, DOI 10.1107/S0021889812007662)\n')
+        f.write('# Vm is a refined estimate of the particle volume (Piiadov et al., 2018, DOI 10.1002/pro.3528)\n')
+        f.write('# Mw was calculated from Vm assuming protein density 83 kDa/nm3 (Squire and Himmel, 1979, DOI: 10.1016/0003-9861(79)90563-0, PMID: 507801)\n')
+        f.write('# Vp(in nm^3)*0.625 kDa/nm3 gives a Mw of %.2f kDa +- 20%s (Petoukhov et al., 2007, DOI 10.1107/S0021889812007662)\n' % (MwP,'%'))
+        f.write('# If BayesApp was useful for you work, please cite the most recent publication: Larsen and Pedersen, 2021, DOI 10.1107/S1600576721006877\n')
+        f.write('#\n')
+        f.write('# r p(r) sigma_p(r)\n')
+        for r_i,pr_i,d_pr_i in zip(r,pr,d_pr):
+            f.write('%f %f %f\n' % (r_i,pr_i,d_pr_i))
+    
     ### end timing
     end_time = time.time()-start_time
     printt('\n    total time:                   %0.1f seconds' % end_time)

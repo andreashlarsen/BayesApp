@@ -1457,7 +1457,7 @@ c     -f6.3,1x,f8.3,1x,f6.3,1x,f6.2,1x,f7.3,1X,f9.2)
      -f8.3,1x,f6.3,1x,f6.2,1x,e8.3,1X,f9.2)
  2135 format
      -(f6.2,F5.2,F5.2,1X,e8.2,1x,f7.3,1x,
-     -f8.3,1x,f6.3,1x,f6.2,1x,e8.3,1X,f9.2)
+     -f10.5,1x,e8.2,1x,f6.2,1x,e8.3,1X,f9.2)
 c*********************************************
 c     Calculate chi2r p-value
 c*********************************************
@@ -1827,8 +1827,8 @@ c*********************************************
       endif
       if((xdlimit.le.11.52).and.(xdlimit.ge.0)) then
       write(166,958)dmax,sdmax
-  958 format(1x,'Maximum diameter           : ',f9.2,
-     -'  +- ',f8.2,' ')
+  958 format(1x,'Maximum diameter           : ',f9.4,
+     -'  +- ',f8.4,' ')
       else
       write(166,1958)dmax,sdmax
  1958 format(1x,'Maximum diameter           : ',e9.2,
@@ -1839,8 +1839,8 @@ c*********************************************
       else
       write(166,9957)rg,srg
       endif
-  957 format(1x,'Radius of gyration         : ',f9.2,
-     -'  +- ',f8.2,' ')
+  957 format(1x,'Radius of gyration         : ',f9.4,
+     -'  +- ',f8.4,' ')
  9957 format(1x,'Radius of gyration         : ',e9.2,
      -'  +- ',e8.2,' ')
 
